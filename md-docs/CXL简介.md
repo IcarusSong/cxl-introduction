@@ -32,12 +32,12 @@ CXL（Compute Express Link）协议自其诞生以来，经历了快速的发展
 - 2022年8月，CXL 3.0规范发布，扩展到多层交换结构、物理链路升级到PCIe 6.0、支持内存共享（Memory Sharing）。
 - 2023年11月 CXL 3.1规范发布，进一步扩展了交换结构、增强内存功能，新增基于安全执行环境的安全协议。
 - 2024年12月 CXL 3.2规范发布，聚焦于内存效率、安全性和互操作性。 
-![](./images/cxl_timeline.png)
-![](./images/cxl_feature.png)
+![](../images/cxl_timeline.png)
+![](../images/cxl_feature.png)
 
 ## CXL三种设备
 CXL一共拥有三类设备：
-![](./images/cxl_type.png)
+![](../images/cxl_type.png)
 - Type1 device：依赖host的memory
     - 需要一个完全一致的缓存来访问宿主的内存。
     - 支持使用CXL缓存链路层的设备：设备可以缓存宿主的内存。
@@ -71,7 +71,7 @@ PCIe使用分层协议，分别是物理层、数据链路层和事务层。CXL�
 其中CXL.io复用了数据链路层和事务层。而CXL.cache和CXL.mem分别实现了自己的数据链路层和事务层。
 
 CXL1.0、1.1、2.0定义了68Byte-Flit，CXL3.0定义了256Byte-Filt。
-![](./images/cxl_flit64.png)
+![](../images/cxl_flit64.png)
 
 ### CXL.io
 - **继承性**：CXL.io 直接基于 PCIe 5.0 的物理层和链路层，兼容其电气特性与基础协议栈。
@@ -155,7 +155,7 @@ D2H Response消息共有七种，D2H Response 的 Opcode 的名字格式很有�
 
 #### example
 缓存一致性所涉及的内存层次结构：
-![](./images/cxl_memory_hierarchy.png)
+![](../images/cxl_memory_hierarchy.png)
 
 这里的Peer Cache可以是下面任意一种：
 - CXL的邻居设备
@@ -168,18 +168,18 @@ D2H Response消息共有七种，D2H Response 的 Opcode 的名字格式很有�
 - 邻居CXL设备上的CXL.mem
 
 ##### Read
-![](./images/cxl_cache_read.png)
+![](../images/cxl_cache_read.png)
 - CXL设备在D2H的Req通道发送RdShare给Home Agent用于读数据。Home Agent一般会有snoop filter，记录着哪些peer cache可能有这个数据的副本。home agent接收到RdShared后一边在H2D的Req通道发送SnpData嗅探请求给有数据的peer cache，一边向内存发送读请求。
 - peer cache接受到SnpData请求后，并没有传递数据，而是在D2H的Resp通道返回了RspSHitSE，表示自己之前是S或者E状态，现在变成了S状态。即peer cache中没有修改过的数据，从内存中获取的数据就是最新的。
 - Home Agent从Memory获得数据，以及所有的嗅探结束后，才能向最初的请求者发送GO响应。其中，GO消息还附带MESI状态信息，用于指示缓存需要切换到的目标状态。在上面的例子中由于还存起其他的副本，所以返回的是GO-S；
 ##### Write
-![](./images/cxl_cache_write.png)
+![](../images/cxl_cache_write.png)
 - CXL设备首先发送RdOwn请求来获得写权限，Home Agent发送SnpInv给所有有副本的缓存。如果peer cache没有脏的数据直接回复RspIHitSE/RspIHitI；如果有脏的数据需要返回RspIFwdM，同时将数据通过D2H Data通道写回去。
 - 在这个例子中我们看到Home agent把所有的peer cache无效掉，并没有从缓存中获得数据，所以从memory中返回的数据就是最新的。然后发送Go-E和Data给发起者。
 - CXL设备获得写权限后，进行写入操作，缓存行状态从E变成了M；
 - 后续这个脏的缓存行可能由于缓存满了需要被替换出去，就需要发送DirtyEvict的写回请求给Home Agent；HomeAgent响应GO_WritePull给CXL设备，表示这个写全局可见了。HomeAgent收到GO_WritePull后就可以安全地把自己的状态改成I状态，同时将数据给到HomeAgent就算完成了。
 ##### Read0-Write
-![](./images/cxl_cache_steaming_write.png)
+![](../images/cxl_cache_steaming_write.png)
 - CXL设备发送ItoMWr/WrCur给Home Agent；Home Agent需要首先负责获取独占权限，然后才能发送GO_writePull，即表示这个写已经全局可见。CXL 设备在收到Go_writePull后就可以把数据直接发送给Home agent；
 - Home Agent接收到要写入的数据后到底是写到Memory还是推送到peer Cache中；取决于实现，以及当前处理的请求类型。比如MemWr只有在缓存命中的时候才会写入到缓存中，否则直接写到内存中。而ItoMWr只要在memory之前有缓存层级，就会写到缓存中，而不会写到内存中去。
 ### CXL.mem
@@ -231,7 +231,7 @@ CXL.mem共有三种一致性模型，分别是**HDM-H**、**HDM-D**和**HDM-DB**
 <!-- 实现CXL.mem的设备可以选择是否为内存空间的每个缓存行存储Meta信息：
  - 无Meta存储：设备依赖主机动态下发一致性指令（metaValue + SnpType），节省硬件开销，适合简单设备。
  - 有Meta存储：设备利用本地Meta信息加速一致性决策（如快速判断缓存行状态），适合高性能复杂设备。
-![](./images/cxl_mate_value.png)
+![](../images/cxl_mate_value.png)
 - I 表示Host侧不存在这个地址数据的副本，可以直接从memory中提供数据。
 - A 表示Host侧有这个地址数据的副本，并且可能后续会进行更新。那么DCOH在后续服务请求时需要先通过CXL.cache协议向Host发送请求解决一致性问题。
 - S 表示Host侧有这个地址数据的副本，但是不会进行更新。那么DCOH是可以安全地从memory中提供数据的，但是如果CXL设备想要获取独占权限，还是需要向Host发送请求的。 -->
@@ -241,36 +241,36 @@ CXL.mem共有三种一致性模型，分别是**HDM-H**、**HDM-D**和**HDM-DB**
 此，访问HDM-H时不使用DCOH代理。这使得流向HDM-H的事务流可以简化为仅两类，即读取和写入。
 #### Read from Host
 在此流程中，仅返回一条数据消息。
-![](./images/cxl_hdmh_read.png)
+![](../images/cxl_hdmh_read.png)
 
 #### Write from Host
 与读取操作不同，写操作总是以S2M NDR Cmp消息完成。这一通用的写入流程下图：
-![](./images/cxl_hdmh_write.png)
+![](../images/cxl_hdmh_write.png)
 
 
 ### HDM-D
 #### Read from Host
-![](./images/cxl_hdmd_cacheable_read_from_host.png)
+![](../images/cxl_hdmd_cacheable_read_from_host.png)
 其中Dev$表示设备内的缓存，Dev Mem表示附着设备的内存；
 Host从M2S方向的Req通道发送MemRd请求，同时包含SnpData，表示Host仅仅想要一个副本，后续不打算修改。DCOH则查找Snoop Filter发现命中，则嗅探自己的缓存。
 嗅探缓存得到数据后通过S2M的NDR通道响应Cmp-S（Host的缓存只能处于S状态），通过S2M的DRS通道响应MemData
 
 #### Write from Host
-![](./images/cxl_hdmd_write_from_host.png)
+![](../images/cxl_hdmd_write_from_host.png)
 Host在H2S的RwD通道发送MemWr/MemWrPtl请求，写的数据一并通过这个通道带下来。
 DCOH查找SF，嗅探数据的同时将所有设备端的副本无效掉；
 获得嗅探的原始数据后跟需要写入的数据进行合并，然后一起写到设备内存中；
 最后给host在S2H的NDR通道响应一个Cmp表示写入完成；
 
 #### Device Read to Device Memory
-![](./images/cxl_hdmd_device_read_to_device_memory.png)
+![](../images/cxl_hdmd_device_read_to_device_memory.png)
 如果DCOH确认这个地址处于主机偏置，需要通过CXL.cache发送请求到主机侧来解决缓存一致性（我们知道Type2设备是支持CXL.cache，而处于主机偏执下的设备内存此时对于设备来说就相当于主机内存，所以可以复用CXL.cache协议）。
 如果DCOH确认这个地址处于设备偏置，如上图的下半部分，那么直接从本地内存读数据即可。
 当主机侧处理完读请求的一致性后，在这个例子中主机没有修改过的数据（可能是S/E状态），因此它在CXL.mem的M2S Req通道上发送MemRdFwd请求，并携带MetaValue来表示Host端是否还有副本。请注意Host发送的MemRdFwd请求相当于是对设备在CXL.cache D2H Request通道RdAng请求的响应(回顾上面，本来是在CXL.cache 的H2D 响应通道发送Go响应的)，这么做目的是确保后续Host对附着设备内存在CXL.mem M2S通道上发送的请求能够被序列化到该请求的后面，减少了可能的冲突冒险发生。
 DCOH在接收到MemRdFwd就代表设备内存中的数据就是最新的。在上面的例子中，Host侧没有修改的数据，所以可以直接发送MemRdFwd请求当作响应；后续的操作就比较简单了，类似于设备偏置的情况。
 
 #### 设备发起的写操作
-![](./images/cxl_hdmd_device_write.png)
+![](../images/cxl_hdmd_device_write.png)
 上面的过程其实跟普通的读操作是类似的，只不过发送的请求变成了RdOwn，同时在主机侧所进行的Snoop操作变成了SnpInv，最后返回给DOCH的Metavalue也变成了I。其他的过程都是一样的。主机收到MemRdFwd的响应后会变成设备偏置模式。在设备偏置模式下，设备缓存的写回操作不需要经过Host了，在设备端即可完成，具体实现可以参考CXL.cache协议；
 如果设备本地端还有其他缓存存在副本，DCOH除了发送请求给Host解决外部的一致性外，还需要负责发送SnpInv去无效设备本地端的缓存副本。在上面例子中由于Host中缓存处于M状态，在设备本地的其他缓存不可能存在副本。
 
@@ -280,10 +280,10 @@ CXL2.0增加了单层交换、资源池化、持久化、QoS保障、热插拔�
 CXL2.0增加了单层交换，host和device直接可以通过一个CXL Switch互连起来。
 
 为了支持多主机连接和设备池化，每个主机都表示CXL topology作为一个虚拟层次（VH），包括交换机和机的端口以及每个具有设备资源的端口的Virtual Bridge一个物理CXL交换机在内部虚拟成多个虚拟CXL交换机(VCS，Virtual CXL Switch)。连接上CXL交换机的每个主机可以看到一个独立的VCS，VCS由Virtual Bridge组成，通过树状拓扑结构连接到所挂载的CXL设备上。
-![](./images/cxl_single_switch.png)
+![](../images/cxl_single_switch.png)
 
 CXL2.0支持两种池化形式，分别是SLD(Single Logical Devices)和MLD(Multiple Logical Devices)
-![](./images/cxl_2.0_pooling.png)
+![](../images/cxl_2.0_pooling.png)
 
 FM（Fabric Manager）动态配置主机VCS中虚拟桥跟特定设备之间的连接。在实践中，FM 可以是在主机上运行的软件、 或 CXL 交换机中的固件，或者是一颗在arm芯片。。FM可以控制每个VCS跟哪些设备进行绑定/解绑，因此也就完成了资源池化(通过MLD特性，将资源细粒度按需分配给需要的VCS；对SLD的重新绑定完成资源的重新分配)的功能。
 
@@ -307,7 +307,7 @@ CXL3.0引入/拓展了以下功能：
 ### 双倍带宽
 每引脚带宽翻倍，同时保持延迟不变
 CXL3.0采用PCIe 6.0® PHY @ 64 GT/s，采用256B Flit
-![](./images/cxl_256_flit.png)
+![](../images/cxl_256_flit.png)
 - **Flit 模式**：
     
     - **256 字节**：高速模式下整合数据 + **Reed-Solomon FEC** 纠错，带宽优先。
@@ -318,15 +318,15 @@ CXL3.0采用PCIe 6.0® PHY @ 64 GT/s，采用256B Flit
 
 ### 多级交换互连
 在CXL2.0中，Host到Device之间只能由一个CXL Switch（单层交换），而在CXL3.0中可以支持多级交换。
-![](./images/cxl_3.0_multi_switch.png)
+![](../images/cxl_3.0_multi_switch.png)
 在CXL2.0中，Host想要连接多种设备，只能通过root port连接CXL Switch进行连接多种设备；而在CXL3.0中，使得单个主机端口可以同时挂载多种设备，并且设备数目也可以更多（最多16个CXL.cache设备）。
 
 ### 内存池化与内存共享
-![](./images/cxl_3.0_memory_share.png)
+![](../images/cxl_3.0_memory_share.png)
 CXL3.0支持池化内存共享，device的一块内存区域可以被多个host共享，由于在CXL2.0定义中只有CXL.cache协议可以被用来交换cache一致性信息，但是他的优先级没有M2S的内存读的操作优先级高，因此会被block， 由此在memory sharing的场景中可能会导致读写的数据是失效的。
 
 为了解决共享内存在多host中的一致性（Type2、Type3），CXL3.0在CXL.mem中增加了Back-Invalidation机制，当由一个host对共享内存进行修改时，可以通过Back-Invalidation通知其它host使得对该共享内存对应的cache line进行无效化。
-![](./images/cxl_bi.png)
+![](../images/cxl_bi.png)
 #### Global Fabric Attached Memory (GFAM)
 CXL3.0 还引入了全局网络结构的附加内存（Global Fabric Attached Memory，GFAM）的概念，它通过将内存从处理单元中解聚出来，实现了共享大内存池。这种架构允许内存与多个处理器直接连接，或者通过 CXL 交换机进行连接，从而提高了内存的灵活性和利用率。GFAM 架构的一个关键特点是，它允许内存池中的内存可以是相同类型或不同类型。GFAM最多可以支持4095个host使用。
 
@@ -345,19 +345,19 @@ CXL3.0 还引入了全局网络结构的附加内存（Global Fabric Attached Me
 
 逻辑设备在内存资源，状态，上下文，管理上都是隔离的；
 每个逻辑设备一次只能映射给一个头，但是一个头可以被多个虚拟层次连接，实现内存共享。
-![](./images/cxl_multi_headed_device.png)
+![](../images/cxl_multi_headed_device.png)
 
 ### Fabrics
-![](./images/cxl_fabrics.png)
-![](./images/cxl_fabrics2.png)
+![](../images/cxl_fabrics.png)
+![](../images/cxl_fabrics2.png)
 CXL3.0中引入了多级交换，并且突破了树状结构，成为一个网状的Fabrics，并且不再严格区分host和device，每个Node都可以是host或者device。
 ### Device peer-to-peer communication (P2P)
-![](./images/cxl_device_p2p.png)
+![](../images/cxl_device_p2p.png)
 CXL 3.0通过back-invalidate来支持内存共享，同时结合UIO实现不经过Host的点到点的通信
 
 无序IO（Unordered I/O ）提出的背景：是PCIe上运行的软件依赖于消费者-生产者排序模型（producer-consumer ordering model），这个排序模型针对是整个系统，不管事务访问的设备是否相同，不管访问的地址位置是否相同，不管访问的属性是否相同（比如可缓存和不可缓存）。消费者和生产者排序模型如下图(a)所示，编程模型保证生产者将数据写到一个内存位置后，后续再写入一个flag，那么系统中所有可能的消费者只要读到了这个flag就一定可以看到生产者写入的数据。在原始的PCIe系统中遵循者树状拓扑结构（层次化路由，Hierarchy Based Routing，HBR，如图42左边），设备跟设备之间只存在唯一的路径，进行保序比较容易实现。但是CXL3.0为了扩展到更多的设备高带宽低延迟互联，提出多层交换机架构和基于端口的路由（Port-Based Routing，PBR，如图42右边），打破了原有树状结构，使得节点到节点的路径不止一条。这时为了避免在路由中引入过多的保序复杂度，同时维护消费者和生产者排序模型，就引入了UIO。UIO的写操作不管是posted还是non-posted的属性，一律当作non-posted来对待，non-posted写规定必须接收到完成事务（Completion）后才能继续后面的写入，因此排序的强制要求放在了发起事务的源头来做。
-![](./images/cxl_pbr.png)
-![](./images/cxl_p_c.png)
+![](../images/cxl_pbr.png)
+![](../images/cxl_p_c.png)
 
 
 
