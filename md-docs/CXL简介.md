@@ -32,7 +32,8 @@ CXL（Compute Express Link）协议自其诞生以来，经历了快速的发展
 - 2022年8月，CXL 3.0规范发布，扩展到多层交换结构、物理链路升级到PCIe 6.0、支持内存共享（Memory Sharing）。
 - 2023年11月 CXL 3.1规范发布，进一步扩展了交换结构、增强内存功能，新增基于安全执行环境的安全协议。
 - 2024年12月 CXL 3.2规范发布，聚焦于内存效率、安全性和互操作性。 
-![](../images/cxl_timeline.png)
+<!-- ![](../images/cxl_timeline.png) -->
+![](https://github.com/IcarusSong/cxl-introduction/blob/main/images/cxl_timeline.png)
 ![](../images/cxl_feature.png)
 
 ## CXL三种设备
