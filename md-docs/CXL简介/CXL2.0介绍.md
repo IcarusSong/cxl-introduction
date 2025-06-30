@@ -6,10 +6,10 @@ CXL2.0增加了单级交换、资源池化、持久化、QoS保障、热插拔�
 CXL2.0增加了**单级交换，host和device直接可以通过一个CXL Switch互连起来**。
 
 为了支持多主机连接和设备池化，每个主机都表示CXL topology作为一个虚拟层次（VH），包括交换机和机的端口以及每个具有设备资源的端口的Virtual Bridge一个物理CXL交换机在内部虚拟成多个虚拟CXL交换机(VCS，Virtual CXL Switch)。连接上CXL交换机的每个主机可以看到一个独立的VCS，VCS由Virtual Bridge组成，通过树状拓扑结构连接到所挂载的CXL设备上。
-![](../images/cxl_single_switch.png)
+![](https://pic1.imgdb.cn/item/6862212e58cb8da5c87ed931.png)
 
 CXL2.0支持**两种池化形式，分别是SLD(Single Logical Devices)和MLD(Multiple Logical Devices)**
-![](../images/cxl_2.0_pooling.png)
+![](https://pic1.imgdb.cn/item/6862213d58cb8da5c87ed9d8.png)
 
 FM（Fabric Manager）动态配置主机VCS中虚拟桥跟特定设备之间的连接。在实践中，FM 可以是在主机上运行的软件、 或 CXL 交换机中的固件，或者是一颗在arm芯片。。FM可以控制每个VCS跟哪些设备进行绑定/解绑，因此也就完成了资源池化(通过MLD特性，将资源细粒度按需分配给需要的VCS；对SLD的重新绑定完成资源的重新分配)的功能。
 

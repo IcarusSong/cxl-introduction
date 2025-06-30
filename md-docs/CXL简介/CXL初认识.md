@@ -35,12 +35,13 @@ CXL（Compute Express Link）协议自其诞生以来，经历了快速的发展
 - 2023年11月 CXL 3.1规范发布，进一步扩展了交换结构、增强内存功能，新增基于安全执行环境的安全协议。
 - 2024年12月 CXL 3.2规范发布，聚焦于内存效率、安全性和互操作性。 
 <!-- ![](../images/cxl_timeline.png) -->
-![](https://github.com/IcarusSong/cxl-introduction/blob/main/images/cxl_timeline.png)
-![](../images/cxl_feature.png)
+![](https://pic1.imgdb.cn/item/68621fe158cb8da5c87ece9c.png)
+![](https://pic1.imgdb.cn/item/68621ff358cb8da5c87ecf1a.png)
+
 
 ## CXL三种设备
 CXL一共拥有三类设备：
-![](../images/cxl_type.png)
+![](https://pic1.imgdb.cn/item/6862201a58cb8da5c87ed020.png)
 - **Type1 device**：依赖host的memory
     - 需要一个完全一致的缓存来访问宿主的内存。
     - 支持使用CXL缓存链路层的设备：设备可以缓存宿主的内存。
@@ -74,4 +75,4 @@ PCIe使用分层协议，分别是物理层、数据链路层和事务层。CXL�
 其中CXL.io复用了数据链路层和事务层。而CXL.cache和CXL.mem分别实现了自己的数据链路层和事务层。
 
 CXL1.0、1.1、2.0定义了68Byte-Flit，CXL3.0定义了256Byte-Filt。
-![](../images/cxl_flit64.png)
+![](https://pic1.imgdb.cn/item/6862202a58cb8da5c87ed08d.png)

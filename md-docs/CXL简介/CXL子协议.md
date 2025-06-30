@@ -83,7 +83,7 @@ D2H Response消息共有七种，D2H Response 的 Opcode 的名字格式很有�
 
 ### example
 缓存一致性所涉及的内存层次结构：
-![](../images/cxl_memory_hierarchy.png)
+![](https://pic1.imgdb.cn/item/6862204e58cb8da5c87ed17e.png)
 
 这里的Peer Cache可以是下面任意一种：
 - CXL的邻居设备
@@ -96,18 +96,18 @@ D2H Response消息共有七种，D2H Response 的 Opcode 的名字格式很有�
 - 邻居CXL设备上的CXL.mem
 
 #### Read
-![](../images/cxl_cache_read.png)
+![](https://pic1.imgdb.cn/item/6862205f58cb8da5c87ed1f4.png)
 - **CXL设备在D2H的Req通道发送RdShare给Home Agent用于读数据**。Home Agent一般会有snoop filter，记录着哪些peer cache可能有这个数据的副本。**home agent接收到RdShared后一边在H2D的Req通道发送SnpData嗅探请求给有数据的peer cache，一边向内存发送读请求**。
 - **peer cache接受到SnpData请求后**，并没有传递数据，而是**在D2H的Resp通道返回了RspSHitSE**，表示自己之前是S或者E状态，现在变成了S状态。即peer cache中没有修改过的数据，从内存中获取的数据就是最新的。
 - **Home Agent从Memory获得数据**，以及**所有的嗅探结束后，才能向最初的请求者发送GO响应**。其中，GO消息还附带MESI状态信息，用于指示缓存需要切换到的目标状态。在上面的例子中由于还存起其他的副本，所以返回的是GO-S；
 #### Write
-![](../images/cxl_cache_write.png)
+![](https://pic1.imgdb.cn/item/6862206d58cb8da5c87ed252.png)
 - CXL设备首先**发送RdOwn请求来获得写权限**，**Home Agent发送SnpInv给所有有副本的缓存**。如果peer cache**没有脏的数据直接回复RspIHitSE/RspIHitI**；如果**有脏的数据需要返回RspIFwdM**，同时将数据通过D2H Data通道写回去。
 - 在这个例子中我们看到Home agent把所有的peer cache无效掉，并没有从缓存中获得数据，所以从memory中返回的数据就是最新的。然后发送Go-E和Data给发起者。
 - **CXL设备获得写权限后，进行写入操作，缓存行状态从E变成了M**；
 - 后续**这个脏的缓存行**可能由于缓存满了需要**被替换出去**，就需要**发送DirtyEvict的写回请求给Home Agent**；**HomeAgent响应GO_WritePull给CXL设备，表示这个写全局可见了**。HomeAgent收到GO_WritePull后就可以安全地把自己的状态改成I状态，同时将数据给到HomeAgent就算完成了。
 #### Read0-Write
-![](../images/cxl_cache_steaming_write.png)
+![](https://pic1.imgdb.cn/item/6862207d58cb8da5c87ed2bd.png)
 - **CXL设备发送ItoMWr/WrCur给Home Agent**；**Home Agent需要首先负责获取独占权限，然后才能发送GO_writePull**，即表示这个写已经全局可见。CXL 设备在收到Go_writePull后就可以把数据直接发送给Home agent；
 - **Home Agent接收到要写入的数据后到底是写到Memory还是推送到peer Cache中；取决于实现，以及当前处理的请求类型**。比如MemWr只有在缓存命中的时候才会写入到缓存中，否则直接写到内存中。而ItoMWr只要在memory之前有缓存层级，就会写到缓存中，而不会写到内存中去。
 ## CXL.mem
@@ -168,35 +168,35 @@ CXL.mem共有三种一致性模型，分别是**HDM-H**、**HDM-D**和**HDM-DB**
 在Type 3设备中，H**DM-H地址区域用作内存扩展器**或用于具有软件一致性的共享FAM设备，其中**设备不需要主动管理与主机的一致性**。这使得流向HDM-H的事务流可以简化为仅两类，即**读取和写入**。
 #### Read from Host
 在此流程中，仅返回一条数据消息。
-![](../images/cxl_hdmh_read.png)
+![](https://pic1.imgdb.cn/item/6862209c58cb8da5c87ed38c.png)
 
 #### Write from Host
 与读取操作不同，写操作总是以S2M NDR Cmp消息完成。这一通用的写入流程下图：
-![](../images/cxl_hdmh_write.png)
+![](https://pic1.imgdb.cn/item/686220aa58cb8da5c87ed3ef.png)
 
 
 ### HDM-D
 #### Read from Host
-![](../images/cxl_hdmd_cacheable_read_from_host.png)
+![](https://pic1.imgdb.cn/item/686220cf58cb8da5c87ed4eb.png)
 - 其中**Dev$表示设备内的缓存，Dev Mem表示附着设备的内存**；
 - **Host**从M2S方向的Req通道**发送MemRd**请求，同时包含**SnpData**，表示Host仅仅想要一个副本，后续不打算修改。**DCOH则查找Snoop Filter发现命中，则嗅探自己的缓存**。
 - 嗅探缓存得到数据后通过**S2M的NDR通道响应Cmp-S**（Host的缓存只能处于S状态），通过S2M的DRS通道响应MemData
 
 #### Write from Host
-![](../images/cxl_hdmd_write_from_host.png)
+![](https://pic1.imgdb.cn/item/686220f858cb8da5c87ed6cf.png)
 - **Host在H2S的RwD通道发送MemWr/MemWrPtl请求**，写的数据一并通过这个通道带下来。
 - **DCOH查找SF**，嗅探数据的同时**将所有设备端的副本无效掉**；
 - 获得嗅探的**原始数据后跟需要写入的数据进行合并，然后一起写到设备内存**中；
 - 最后给host在S2H的NDR通道响应一个Cmp表示写入完成；
 
 #### Device Read to Device Memory
-![](../images/cxl_hdmd_device_read_to_device_memory.png)
+![](https://pic1.imgdb.cn/item/6862210858cb8da5c87ed78e.png)
 - 如果DCOH确认这个地址**处于主机偏置**，需要**通过CXL.cache发送请求到主机侧来解决缓存一致性**（我们知道Type2设备是支持CXL.cache，而处于主机偏执下的设备内存此时对于设备来说就相当于主机内存，所以可以复用CXL.cache协议），先请求Device Bias。
 - 如果DCOH确认这个地址处于**设备偏置**，如上图的下半部分，那么**直接从本地内存读数据即可**。
 - 当主机侧处理完读请求的一致性后，在这个例子中主机没有修改过的数据（可能是S/E状态），因此它在**CXL.mem的M2S Req通道上发送MemRdFwd**请求，并携带MetaValue来表示Host端是否还有副本。**Host发送的MemRdFwd请求相当于是对设备在CXL.cache D2H Request通道RdAny请求的响应**(本来是在CXL.cache 的H2D 响应通道发送Go响应的)，这么做目的是**确保后续Host对附着设备内存在CXL.mem M2S通道上发送的请求能够被序列化**到该请求的后面，减少了可能的冲突冒险发生。
 - **DCOH在接收到MemRdFwd就代表设备内存中的数据就是最新的**。在上面的例子中，Host侧没有修改的数据，所以可以直接发送MemRdFwd请求当作响应；后续的操作就比较简单了，类似于设备偏置的情况。
 
 #### 设备发起的写操作
-![](../images/cxl_hdmd_device_write.png)
+![](https://pic1.imgdb.cn/item/6862211a58cb8da5c87ed848.png)
 - 上面的过程其实跟普通的读操作是类似的，只不过发送的请求变成了**RdOwn**，同时在主机侧所进行的**Snoop操作变成了SnpInv**，最后返回给DOCH的Metavalue也变成了I。其他的过程都是一样的。**主机收到MemRdFwd的响应后会变成设备偏置模式**。在**设备偏置模式下，设备缓存的写回操作不需要经过Host了**，在设备端即可完成。
 - 如果设备本地端还有其他缓存存在副本，DCOH除了发送请求给Host解决外部的一致性外，还需要负责发送SnpInv去无效设备本地端的缓存副本。在上面例子中由于Host中缓存处于M状态，在设备本地的其他缓存不可能存在副本。
