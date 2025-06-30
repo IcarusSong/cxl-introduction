@@ -2,6 +2,7 @@
 - README: 1
 - reference: 2
 - CXL_System_Architecture: 3
+- CXL_Transaction_Layer: 4
 CXL简介:
 - CXL初认识: 1
 - CXL子协议: 2
