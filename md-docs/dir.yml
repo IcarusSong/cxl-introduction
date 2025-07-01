@@ -2,10 +2,21 @@
 - README: 1
 - reference: 2
 - CXL_System_Architecture: 3
-- CXL_Transaction_Layer: 4
 CXL简介:
 - CXL初认识: 1
 - CXL子协议: 2
 - CXL2.0介绍: 3
 - CXL3.0介绍: 4
 - CXL3.1和CXL3.2: 5
+CXL_Transaction_Layer:
+- CXL.io: 1
+- CXL.mem: 2
+- CXL.cache: 3
+- Transaction_Ordering_Summary: 4
+- Transaction Flows to Device-attached Memory: 5
+Switching:
+- Overview: 1
+- 7.2 Switch Configuration and Composition: 2
+- 7.3 CXL.io, CXL.cachemem Decode and Forwarding: 3
+- 7.6 Fabric Manager Application Programming Interface: 4
+- 7.7 CXL Fabric Architecture: 5
