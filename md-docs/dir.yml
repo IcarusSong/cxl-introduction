@@ -20,3 +20,10 @@ Switching:
 - 7.3 CXL.io, CXL.cachemem Decode and Forwarding: 3
 - 7.6 Fabric Manager Application Programming Interface: 4
 - 7.7 CXL Fabric Architecture: 5
+spec9.0:
+- 9.1 CXL Boot and Reset Overview: 1
+- 9.5 Function Level Reset (FLR): 2
+- 9.6 Cache Management: 3
+- 9.7 CXL Reset: 4
+- 9.9 Hot-Plug: 5
+- 9.11 RCD Enumeration: 6
